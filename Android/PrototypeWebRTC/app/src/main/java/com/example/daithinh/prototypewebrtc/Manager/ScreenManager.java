@@ -1,8 +1,6 @@
 package com.example.daithinh.prototypewebrtc.Manager;
 
 
-import android.content.Context;
-
 import com.example.daithinh.prototypewebrtc.View.IMainView;
 
 public class ScreenManager {

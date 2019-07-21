@@ -1,10 +1,14 @@
 package com.example.daithinh.prototypewebrtc.Activity;
 
+import android.Manifest;
 import android.app.Activity;
 import android.app.Fragment;
 import android.app.FragmentManager;
+import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.FrameLayout;
@@ -37,6 +41,27 @@ public class MainActivity extends Activity implements IMainView {
 
         initView();
         openScreen(ScreenManager.SCREEN_TYPE_LOGIN);
+
+        requestPermission();
+    }
+
+    private void requestPermission(){
+        int permission_internet = ContextCompat.checkSelfPermission(this, Manifest.permission.INTERNET);
+        int permission_camera = ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA);
+        int permission_audio = ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO);
+        int permission_modify_audio = ContextCompat.checkSelfPermission(this, Manifest.permission.MODIFY_AUDIO_SETTINGS);
+
+        if (permission_internet != PackageManager.PERMISSION_GRANTED
+                || permission_camera != PackageManager.PERMISSION_GRANTED
+                || permission_audio != PackageManager.PERMISSION_GRANTED
+                || permission_modify_audio != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{
+                    Manifest.permission.INTERNET,
+                    Manifest.permission.CAMERA,
+                    Manifest.permission.RECORD_AUDIO,
+                    Manifest.permission.MODIFY_AUDIO_SETTINGS
+            }, 1);
+        }
     }
 
     @Override
