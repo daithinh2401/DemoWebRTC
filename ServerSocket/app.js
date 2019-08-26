@@ -1,7 +1,26 @@
 var express = require("express");
 var app = express();
 var server = require("http").createServer(app);
-var io = require("socket.io").listen(server.listen(process.env.PORT || 5000));
+// var io = require("socket.io").listen(server.listen(process.env.PORT || 5000));
+
+var io = require("socket.io").listen(server.listen(3000 , '', () => {
+	console.log(`Server is running `);
+}));
+
+// Join message
+let SOCKET_MESSAGE_JOIN 					= 'join';
+let SOCKET_MESSAGE_JOIN_SUCCESS 			= 'join_success';
+
+// Update list
+let SOCKET_MESSAGE_LEAVE					= 'leave';
+let SOCKET_MESSAGE_GET_USER					= 'get_users';
+let SOCKET_MESSAGE_UPDATE_USER_LIST			= 'update_user_list';
+
+// Call
+let SOCKET_MESSAGE_OFFER					= 'offer';
+let SOCKET_MESSAGE_ANSWER					= 'answer';
+let SOCKET_MESSAGE_REJECT					= 'reject';
+let SOCKET_MESSAGE_CANDIDATE				= 'candidate';
 
 var users = [];
 
@@ -11,60 +30,54 @@ app.get("/", function(req, res){
 	
 io.sockets.on('connection' , function(client){
 
-	client.on('join' , function(data){
-		if(users.includes(data.id)){
-			io.sockets.in(data.id).emit('join_faied');
-			console.log('User ' + data.id + ' existed');
-		} else {
+	client.on(SOCKET_MESSAGE_JOIN , function(data){
+		if(!users.includes(data.to)){
 			users.push(data.id);
-			client.join(data.id);
-			io.sockets.in(data.id).emit('join_success');
-			console.log('User ' + data.id + ' has connected');
+		} 
+		client.join(data.id);
+		io.sockets.in(data.id).emit(SOCKET_MESSAGE_JOIN_SUCCESS);
+		console.log('User ' + data.id + ' has connected');
 
-			client.broadcast.emit('new_user_join' , users);
-		}
+		client.broadcast.emit(SOCKET_MESSAGE_UPDATE_USER_LIST , users);
 	});
 
-	client.on('leave', function(data){
+	client.on(SOCKET_MESSAGE_LEAVE, function(data){
 		console.log('User ' + data.id + ' has left');
 		client.leave(data.id);
-		users.pop(data.id);
-		client.broadcast.emit('user_has_left' , users);
+		users.splice( users.indexOf(data.id), 1);
+
+		console.log('List users: ' + users);
+
+		client.broadcast.emit(SOCKET_MESSAGE_UPDATE_USER_LIST , users);
 	});
 
-	client.on('get_users', function(data){
+	client.on(SOCKET_MESSAGE_GET_USER, function(data){
 		console.log('Get list user from ' + data.id);
-		io.sockets.in(data.id).emit('users_from_server', users);
-	});
-	
-	client.on('send', function(data){
-		console.log('Make connect to ' + data.id);
-		io.sockets.in(data.id).emit('wantconnect' , data);
-	});
-	
-	client.on('acceptconnect' , function(data){
-		console.log('createoffer ' + data.id);
-		client.broadcast.emit('createoffer' , {});	
-		
-	});
-	
-	client.on('unacceptconnect' , function(data){
-		client.broadcast.emit('unacceptconnect' , {});	
+
+		io.sockets.in(data.id).emit(SOCKET_MESSAGE_UPDATE_USER_LIST, users);
 	});
 
-	client.on('offer', function (details) {
-		client.broadcast.emit('offer', details);
-		console.log('offer: ' + JSON.stringify(details));
+
+
+
+	client.on(SOCKET_MESSAGE_OFFER, function (data) {
+		io.sockets.in(data.to).emit(SOCKET_MESSAGE_OFFER, data);
+		console.log('Send offer to: ' + data.to);
 	});
 
-	client.on('answer', function (details) {
-		client.broadcast.emit('answer', details);
-		console.log('answer: ' + JSON.stringify(details));
+	client.on(SOCKET_MESSAGE_ANSWER, function (data) {
+		io.sockets.in(data.to).emit(SOCKET_MESSAGE_ANSWER, data);
+		console.log('Send answer to: ' + data.to);
+	});
+
+	client.on(SOCKET_MESSAGE_REJECT, function (data) {
+		io.sockets.in(data.to).emit(SOCKET_MESSAGE_REJECT);
+		console.log('Send reject to: ' + data.to);
 	});
 		
-	client.on('candidate', function (details) {
-		client.broadcast.emit('candidate', details);
-		console.log('candidate: ' + JSON.stringify(details));
+	client.on(SOCKET_MESSAGE_CANDIDATE, function (data) {
+		io.sockets.in(data.to).emit(SOCKET_MESSAGE_CANDIDATE, data);
+		console.log('Send candidate to: ' + data.to);
 	});
 });
 

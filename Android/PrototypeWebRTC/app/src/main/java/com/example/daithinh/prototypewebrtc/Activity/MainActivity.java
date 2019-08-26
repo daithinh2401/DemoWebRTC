@@ -34,15 +34,30 @@ public class MainActivity extends Activity implements IMainView {
     ScreenManager mScreenManager;
     SocketManager mSocketManager;
 
+    static MainActivity mInstance;
+
+    public static MainActivity getInstance(){
+        return mInstance;
+    }
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_activity);
 
+        mInstance = this;
+
         initView();
         openScreen(ScreenManager.SCREEN_TYPE_LOGIN);
 
         requestPermission();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+
+        mInstance = null;
     }
 
     private void requestPermission(){

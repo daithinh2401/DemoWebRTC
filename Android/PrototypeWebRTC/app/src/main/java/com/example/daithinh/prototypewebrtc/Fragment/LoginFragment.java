@@ -22,10 +22,6 @@ import org.json.JSONObject;
 
 public class LoginFragment extends Fragment implements View.OnClickListener {
 
-    private static final String JOIN_MESSAGE         = "join";
-    private static final String JOIN_SUCCESS         = "join_success";
-    private static final String JOIN_FAILED          = "join_faied";
-
     Context mContext;
 
     EditText editTextLogin;
@@ -74,37 +70,31 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
     }
 
     private void doLogIn(String name){
-        JSONObject jsonObject = createLoginObject(name);
-        if(jsonObject != null)
-            SocketManager.getInstance().sendToSocket(JOIN_MESSAGE, jsonObject);
-    }
-
-    public JSONObject createLoginObject(String name){
         JSONObject object = new JSONObject();
 
         try {
             object.put("id", name);
         }
-        catch (JSONException e) {
+        catch (Exception e) {
             Log.e("TAG" , "SocketManager.joinToSocket(): Failed , exception " + e.toString());
             object = null;
         }
 
-        return object;
+        if(object != null)
+            SocketManager.getInstance().sendToSocket(SocketManager.SOCKET_MESSAGE_JOIN, object);
     }
+
 
     private void registerLoginCallback(){
         Socket socket = SocketManager.getInstance().getSocket();
 
-        socket.on(JOIN_SUCCESS, onJoinSuccess);
-        socket.on(JOIN_FAILED, onJoinFailed);
+        socket.on(SocketManager.SOCKET_MESSAGE_JOIN_SUCCESS, onJoinSuccess);
     }
 
     private void removeLoginCallback(){
         Socket socket = SocketManager.getInstance().getSocket();
 
-        socket.off(JOIN_SUCCESS, onJoinSuccess);
-        socket.off(JOIN_FAILED, onJoinFailed);
+        socket.off(SocketManager.SOCKET_MESSAGE_JOIN_SUCCESS, onJoinSuccess);
     }
 
     public Emitter.Listener onJoinSuccess = new Emitter.Listener() {
@@ -113,14 +103,6 @@ public class LoginFragment extends Fragment implements View.OnClickListener {
             Log.d("TAG", "MyDemo.SocketManager.setSocketCallback(): onJoinSuccess !");
             ScreenManager.getInstance().mSelfName = editTextLogin.getText().toString();
             ScreenManager.getInstance().openScreen(ScreenManager.SCREEN_TYPE_LIST_USER);
-        }
-    };
-
-    public Emitter.Listener onJoinFailed = new Emitter.Listener() {
-        @Override
-        public void call(Object... objects) {
-            Log.d("TAG", "MyDemo.SocketManager.setSocketCallback(): onJoinFailed !");
-            ScreenManager.getInstance().showJoinFailed("User existed !");
         }
     };
 

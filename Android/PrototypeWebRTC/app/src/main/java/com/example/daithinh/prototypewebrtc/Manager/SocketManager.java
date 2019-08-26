@@ -10,8 +10,23 @@ import org.json.JSONObject;
 
 public class SocketManager {
 
-    private static final String SIGNALING_SERVER_URL = "https://testserver-webrtc.herokuapp.com";
-//    private static final String SIGNALING_SERVER_URL = "http://172.16.1.29:3000";
+//    private static final String SIGNALING_SERVER_URL = "https://testserver-webrtc.herokuapp.com";
+    private static final String SIGNALING_SERVER_URL = "http://192.168.1.144:3000";
+
+    // For call
+    public static final String SOCKET_MESSAGE_OFFER                         = "offer";
+    public static final String SOCKET_MESSAGE_ANSWER                        = "answer";
+    public static final String SOCKET_MESSAGE_REJECT                        = "reject";
+    public static final String SOCKET_MESSAGE_CANDIDATE                     = "candidate";
+
+
+    // For another
+    public static final String SOCKET_MESSAGE_JOIN                          = "join";
+    public static final String SOCKET_MESSAGE_JOIN_SUCCESS                  = "join_success";
+    public static final String SOCKET_MESSAGE_UPDATE_USER_LIST		        = "update_user_list";
+
+    public static final String SOCKET_MESSAGE_GET_USER					    = "get_users";
+
 
     private Socket mSocket;
     private static SocketManager mInstance;
